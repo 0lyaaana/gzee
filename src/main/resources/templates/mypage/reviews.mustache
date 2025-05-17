@@ -1,0 +1,46 @@
+{{>layout/header}}
+
+<div class="container">
+    <div class="row mt-5">
+        <div class="col-md-3">
+            {{>mypage/sidebar}}
+        </div>
+        <div class="col-md-9">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4>나의 후기</h4>
+                </div>
+                <div class="card-body">
+                    {{^reviews}}
+                        <div class="alert alert-info">
+                            작성한 후기가 없습니다. <a href="/mypage/plans" class="alert-link">확정 계획</a>에서 후기를 작성해보세요!
+                        </div>
+                    {{/reviews}}
+                    
+                    {{#reviews}}
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                <h5 class="card-title">{{title}}</h5>
+                                <h6 class="card-subtitle mb-2 text-muted">{{recommendationTitle}}</h6>
+                                <div class="mb-2">
+                                    {{#starRating}}
+                                        <span class="text-warning">★</span>
+                                    {{/starRating}}
+                                </div>
+                                <p class="text-muted">작성일: {{createdAt}}</p>
+                                <p class="card-text">
+                                    <span class="badge bg-info text-dark"><i class="bi bi-hand-thumbs-up"></i> {{likeCount}}</span>
+                                    <span class="badge bg-info text-dark"><i class="bi bi-chat"></i> {{commentCount}}</span>
+                                </p>
+                                <a href="/reviews/{{id}}" class="btn btn-sm btn-outline-primary">상세보기</a>
+                                <a href="/reviews/edit/{{id}}" class="btn btn-sm btn-outline-secondary">수정</a>
+                            </div>
+                        </div>
+                    {{/reviews}}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{>layout/footer}} 

@@ -1,0 +1,327 @@
+{{>layout/header}}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4>{{review.title}}</h4>
+                </div>
+                <div class="card-body">
+                    {{#param.error}}
+                        <div class="alert alert-danger">
+                            {{param.error}}
+                        </div>
+                    {{/param.error}}
+                    
+                    <div class="mb-4">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <div>
+                                <span class="badge bg-secondary">{{review.author}}</span>
+                                <small class="text-muted ms-2">{{review.createdAt}}</small>
+                            </div>
+                            <div>
+                                {{#review.isAuthor}}
+                                    <a href="/reviews/edit/{{review.id}}" class="btn btn-sm btn-outline-secondary">수정</a>
+                                    <form action="/reviews/delete/{{review.id}}" method="post" class="d-inline">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('정말 삭제하시겠습니까?');">삭제</button>
+                                    </form>
+                                {{/review.isAuthor}}
+                            </div>
+                        </div>
+                        
+                        <div class="card mb-3">
+                            <div class="card-header">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <span class="text-muted">추천 활동:</span> {{review.recommendationTitle}}
+                                    </div>
+                                    <div>
+                                        {{#review.starRating}}
+                                            <span class="text-warning">★</span>
+                                        {{/review.starRating}}
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    {{#review.imageUrl}}
+                                        <div class="text-center mb-3">
+                                            <img src="{{review.imageUrl}}" alt="후기 이미지" class="img-fluid rounded">
+                                        </div>
+                                    {{/review.imageUrl}}
+                                    <div class="review-content">
+                                        {{review.content}}
+                                    </div>
+                                </div>
+                                
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <button id="like-button" class="btn btn-sm {{#review.isLiked}}btn-danger{{/review.isLiked}}{{^review.isLiked}}btn-outline-danger{{/review.isLiked}}" data-id="{{review.id}}">
+                                        <i class="bi bi-heart-fill"></i> 공감 <span id="like-count">{{review.likeCount}}</span>
+                                    </button>
+                                    <a href="/reviews" class="btn btn-sm btn-outline-secondary">목록으로</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 댓글 섹션 -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="mb-0">댓글</h5>
+                        </div>
+                        <div class="card-body">
+                            {{#isLoggedIn}}
+                            <form id="comment-form">
+                                <div class="mb-3">
+                                    <textarea class="form-control" id="comment-content" rows="3" placeholder="댓글을 입력하세요" required></textarea>
+                                </div>
+                                <div class="text-end">
+                                    <button type="submit" class="btn btn-primary">댓글 작성</button>
+                                </div>
+                            </form>
+                            {{/isLoggedIn}}
+                            {{^isLoggedIn}}
+                            <div class="alert alert-info">
+                                <p>댓글을 작성하려면 <a href="/auth/login" class="alert-link">로그인</a>이 필요합니다.</p>
+                            </div>
+                            {{/isLoggedIn}}
+                            
+                            <hr>
+                            
+                            <div id="comments-container">
+                                <!-- 댓글이 여기에 로드됩니다 -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const reviewId = '{{review.id}}';
+        const commentForm = document.getElementById('comment-form');
+        const commentsContainer = document.getElementById('comments-container');
+        const likeButton = document.getElementById('like-button');
+        const likeCount = document.getElementById('like-count');
+        
+        // 댓글 불러오기
+        function loadComments() {
+            fetch(`/api/comments/${reviewId}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('댓글을 불러오는데 실패했습니다.');
+                    }
+                    return response.json();
+                })
+                .then(comments => {
+                    commentsContainer.innerHTML = '';
+                    
+                    if (comments.length === 0) {
+                        commentsContainer.innerHTML = '<p class="text-center text-muted">등록된 댓글이 없습니다.</p>';
+                        return;
+                    }
+                    
+                    comments.forEach(comment => {
+                        const commentHtml = `
+                            <div class="comment mb-3" id="comment-${comment.id}">
+                                <div class="d-flex justify-content-between">
+                                    <div>
+                                        <strong>${comment.author}</strong>
+                                        <small class="text-muted ms-2">${comment.createdAt}</small>
+                                        ${comment.isEdited ? '<small class="text-muted">(수정됨)</small>' : ''}
+                                    </div>
+                                    ${comment.isAuthor ? `
+                                        <div>
+                                            <button class="btn btn-sm btn-link edit-comment" data-id="${comment.id}">수정</button>
+                                            <button class="btn btn-sm btn-link text-danger delete-comment" data-id="${comment.id}">삭제</button>
+                                        </div>
+                                    ` : ''}
+                                </div>
+                                <div class="comment-content mt-1">${comment.content}</div>
+                                <div class="edit-form d-none">
+                                    <textarea class="form-control mb-2">${comment.content}</textarea>
+                                    <div class="text-end">
+                                        <button class="btn btn-sm btn-secondary cancel-edit">취소</button>
+                                        <button class="btn btn-sm btn-primary save-edit" data-id="${comment.id}">저장</button>
+                                    </div>
+                                </div>
+                            </div>
+                            <hr>
+                        `;
+                        commentsContainer.innerHTML += commentHtml;
+                    });
+                    
+                    // 댓글 수정 이벤트 리스너 추가
+                    document.querySelectorAll('.edit-comment').forEach(button => {
+                        button.addEventListener('click', function() {
+                            const commentId = this.getAttribute('data-id');
+                            const commentDiv = document.getElementById(`comment-${commentId}`);
+                            const contentDiv = commentDiv.querySelector('.comment-content');
+                            const editForm = commentDiv.querySelector('.edit-form');
+                            
+                            contentDiv.classList.add('d-none');
+                            editForm.classList.remove('d-none');
+                        });
+                    });
+                    
+                    // 수정 취소 이벤트 리스너
+                    document.querySelectorAll('.cancel-edit').forEach(button => {
+                        button.addEventListener('click', function() {
+                            const commentDiv = this.closest('.comment');
+                            const contentDiv = commentDiv.querySelector('.comment-content');
+                            const editForm = commentDiv.querySelector('.edit-form');
+                            
+                            contentDiv.classList.remove('d-none');
+                            editForm.classList.add('d-none');
+                        });
+                    });
+                    
+                    // 수정 저장 이벤트 리스너
+                    document.querySelectorAll('.save-edit').forEach(button => {
+                        button.addEventListener('click', function() {
+                            const commentId = this.getAttribute('data-id');
+                            const commentDiv = document.getElementById(`comment-${commentId}`);
+                            const textarea = commentDiv.querySelector('.edit-form textarea');
+                            const content = textarea.value.trim();
+                            
+                            if (!content) {
+                                alert('댓글 내용을 입력해주세요.');
+                                return;
+                            }
+                            
+                            updateComment(commentId, content);
+                        });
+                    });
+                    
+                    // 댓글 삭제 이벤트 리스너
+                    document.querySelectorAll('.delete-comment').forEach(button => {
+                        button.addEventListener('click', function() {
+                            const commentId = this.getAttribute('data-id');
+                            if (confirm('정말 삭제하시겠습니까?')) {
+                                deleteComment(commentId);
+                            }
+                        });
+                    });
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    commentsContainer.innerHTML = `<p class="text-danger">댓글을 불러오는데 실패했습니다: ${error.message}</p>`;
+                });
+        }
+        
+        // 댓글 작성
+        if (commentForm) {
+            commentForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const content = document.getElementById('comment-content').value.trim();
+                if (!content) {
+                    alert('댓글 내용을 입력해주세요.');
+                    return;
+                }
+                
+                fetch(`/api/comments/${reviewId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ content: content })
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        return response.text().then(text => { throw new Error(text) });
+                    }
+                    return response.json();
+                })
+                .then(() => {
+                    document.getElementById('comment-content').value = '';
+                    loadComments();
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert(`댓글 작성에 실패했습니다: ${error.message}`);
+                });
+            });
+        }
+        
+        // 댓글 수정
+        function updateComment(commentId, content) {
+            fetch(`/api/comments/${commentId}`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ content: content })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.text().then(text => { throw new Error(text) });
+                }
+                return response.json();
+            })
+            .then(() => {
+                loadComments();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert(`댓글 수정에 실패했습니다: ${error.message}`);
+            });
+        }
+        
+        // 댓글 삭제
+        function deleteComment(commentId) {
+            fetch(`/api/comments/${commentId}`, {
+                method: 'DELETE'
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.text().then(text => { throw new Error(text) });
+                }
+                return response.json();
+            })
+            .then(() => {
+                loadComments();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert(`댓글 삭제에 실패했습니다: ${error.message}`);
+            });
+        }
+        
+        // 공감 버튼 클릭
+        likeButton.addEventListener('click', function() {
+            fetch(`/api/likes/${reviewId}`, {
+                method: 'POST'
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.text().then(text => { throw new Error(text) });
+                }
+                return response.json();
+            })
+            .then(data => {
+                likeCount.textContent = data.likeCount;
+                if (data.isLiked) {
+                    likeButton.classList.remove('btn-outline-danger');
+                    likeButton.classList.add('btn-danger');
+                } else {
+                    likeButton.classList.remove('btn-danger');
+                    likeButton.classList.add('btn-outline-danger');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert(`공감 처리에 실패했습니다: ${error.message}`);
+            });
+        });
+        
+        // 초기 댓글 로드
+        loadComments();
+    });
+</script>
+
+{{>layout/footer}} 

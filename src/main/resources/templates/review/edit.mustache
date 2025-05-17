@@ -1,0 +1,106 @@
+{{>layout/header}}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4>후기 수정</h4>
+                </div>
+                <div class="card-body">
+                    {{#errorMessage}}
+                        <div class="alert alert-danger">
+                            {{errorMessage}}
+                        </div>
+                    {{/errorMessage}}
+                    
+                    <form action="/reviews/edit/{{reviewId}}" method="post">
+                        <div class="mb-3">
+                            <label for="title" class="form-label">제목</label>
+                            <input type="text" class="form-control" id="title" name="title" value="{{title}}" required>
+                            {{#validationErrors.title}}
+                                <div class="text-danger">{{.}}</div>
+                            {{/validationErrors.title}}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="content" class="form-label">내용</label>
+                            <textarea class="form-control" id="content" name="content" rows="10" required>{{content}}</textarea>
+                            {{#validationErrors.content}}
+                                <div class="text-danger">{{.}}</div>
+                            {{/validationErrors.content}}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="imageUrl" class="form-label">이미지 URL (선택사항)</label>
+                            <input type="text" class="form-control" id="imageUrl" name="imageUrl" value="{{imageUrl}}">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">별점</label>
+                            <div class="star-rating">
+                                <div class="btn-group" role="group">
+                                    <input type="radio" class="btn-check" name="starRating" id="star1" value="1" {{#isStar1}}checked{{/isStar1}} required>
+                                    <label class="btn btn-outline-warning" for="star1">★</label>
+                                    
+                                    <input type="radio" class="btn-check" name="starRating" id="star2" value="2" {{#isStar2}}checked{{/isStar2}}>
+                                    <label class="btn btn-outline-warning" for="star2">★★</label>
+                                    
+                                    <input type="radio" class="btn-check" name="starRating" id="star3" value="3" {{#isStar3}}checked{{/isStar3}}>
+                                    <label class="btn btn-outline-warning" for="star3">★★★</label>
+                                    
+                                    <input type="radio" class="btn-check" name="starRating" id="star4" value="4" {{#isStar4}}checked{{/isStar4}}>
+                                    <label class="btn btn-outline-warning" for="star4">★★★★</label>
+                                    
+                                    <input type="radio" class="btn-check" name="starRating" id="star5" value="5" {{#isStar5}}checked{{/isStar5}}>
+                                    <label class="btn btn-outline-warning" for="star5">★★★★★</label>
+                                </div>
+                            </div>
+                            {{#validationErrors.starRating}}
+                                <div class="text-danger">{{.}}</div>
+                            {{/validationErrors.starRating}}
+                        </div>
+                        
+                        <div class="d-flex justify-content-between">
+                            <a href="/reviews/{{reviewId}}" class="btn btn-secondary">취소</a>
+                            <button type="submit" class="btn btn-primary">수정 완료</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // 별점 버튼 클릭 시 시각적 효과
+        const starButtons = document.querySelectorAll('.btn-outline-warning');
+        starButtons.forEach(function(button, index) {
+            button.addEventListener('click', function() {
+                // 모든 버튼 리셋
+                starButtons.forEach(function(btn) {
+                    btn.classList.remove('active');
+                });
+                
+                // 클릭한 버튼까지 활성화
+                for (let i = 0; i <= index; i++) {
+                    starButtons[i].classList.add('active');
+                }
+            });
+        });
+        
+        // 초기 별점 표시
+        const starRating = document.querySelector('input[name="starRating"]:checked');
+        if (starRating) {
+            const rating = parseInt(starRating.value);
+            for (let i = 0; i < rating; i++) {
+                if (starButtons[i]) {
+                    starButtons[i].classList.add('active');
+                }
+            }
+        }
+    });
+</script>
+
+{{>layout/footer}} 

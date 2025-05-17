@@ -1,0 +1,178 @@
+{{>layout/header}}
+
+<div class="container">
+    <div class="row mt-5">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4>오늘의 GZEE</h4>
+                </div>
+                <div class="card-body">
+                    <div id="recommendation-container">
+                        {{#recommendation}}
+                            <h3 class="card-title">{{title}}</h3>
+                            <p class="card-text">{{description}}</p>
+                            <div class="d-flex justify-content-between mt-4">
+                                <button id="refresh-btn" class="btn btn-secondary">다른 추천 보기</button>
+                                <button id="confirm-btn" class="btn btn-primary" data-id="{{id}}">이거 할래요!</button>
+                            </div>
+                        {{/recommendation}}
+                    </div>
+                    <div id="confirmation-container" style="display: none;">
+                        <div class="alert alert-success">
+                            <h4 class="alert-heading">계획이 확정되었습니다!</h4>
+                            <p>바로 후기를 작성하시겠습니까?</p>
+                        </div>
+                        <div class="d-flex justify-content-between mt-4">
+                            <a href="/random" class="btn btn-secondary">다시 추천받기</a>
+                            <a href="/reviews" id="write-review-btn" class="btn btn-primary">후기 작성하기</a>
+                        </div>
+                    </div>
+                    <div id="error-container" style="display: none;">
+                        <div class="alert alert-danger">
+                            <h4 class="alert-heading">오류가 발생했습니다.</h4>
+                            <p id="error-message"></p>
+                        </div>
+                        <div class="d-flex justify-content-center mt-4">
+                            <button id="back-btn" class="btn btn-secondary">돌아가기</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 리뷰 목록 바로가기 버튼 추가 -->
+            <div class="text-center mt-4">
+                <a href="/reviews" class="btn btn-lg btn-outline-primary">다른 사람들의 후기 보러가기</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const refreshBtn = document.getElementById('refresh-btn');
+        const confirmBtn = document.getElementById('confirm-btn');
+        const backBtn = document.getElementById('back-btn');
+        const recommendationContainer = document.getElementById('recommendation-container');
+        const confirmationContainer = document.getElementById('confirmation-container');
+        const errorContainer = document.getElementById('error-container');
+        const errorMessage = document.getElementById('error-message');
+        let confirmedPlanId = null;
+
+        // 새로운 추천 가져오기
+        refreshBtn.addEventListener('click', function() {
+            fetch('/api/random')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('추천을 가져오는데 실패했습니다.');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    const html = `
+                        <h3 class="card-title">${data.title}</h3>
+                        <p class="card-text">${data.description}</p>
+                        <div class="d-flex justify-content-between mt-4">
+                            <button id="refresh-btn" class="btn btn-secondary">다른 추천 보기</button>
+                            <button id="confirm-btn" class="btn btn-primary" data-id="${data.id}">이거 할래요!</button>
+                        </div>
+                    `;
+                    recommendationContainer.innerHTML = html;
+                    
+                    // 이벤트 리스너 다시 연결
+                    document.getElementById('refresh-btn').addEventListener('click', refreshRecommendation);
+                    document.getElementById('confirm-btn').addEventListener('click', confirmPlan);
+                })
+                .catch(error => {
+                    showError(error.message);
+                });
+        });
+
+        // 새로운 추천 가져오기 함수
+        function refreshRecommendation() {
+            fetch('/api/random')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('추천을 가져오는데 실패했습니다.');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    const html = `
+                        <h3 class="card-title">${data.title}</h3>
+                        <p class="card-text">${data.description}</p>
+                        <div class="d-flex justify-content-between mt-4">
+                            <button id="refresh-btn" class="btn btn-secondary">다른 추천 보기</button>
+                            <button id="confirm-btn" class="btn btn-primary" data-id="${data.id}">이거 할래요!</button>
+                        </div>
+                    `;
+                    recommendationContainer.innerHTML = html;
+                    
+                    // 이벤트 리스너 다시 연결
+                    document.getElementById('refresh-btn').addEventListener('click', refreshRecommendation);
+                    document.getElementById('confirm-btn').addEventListener('click', confirmPlan);
+                })
+                .catch(error => {
+                    showError(error.message);
+                });
+        }
+        
+        // 계획 확정하기
+        function confirmPlan() {
+            const recommendationId = this.getAttribute('data-id');
+            
+            fetch('/api/confirmed-plan', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    recommendationId: recommendationId
+                })
+            })
+            .then(response => {
+                if (!response.ok) {
+                    return response.text().then(text => { throw new Error(text) });
+                }
+                return response.json();
+            })
+            .then((data) => {
+                confirmedPlanId = data;
+                document.getElementById('write-review-btn').href = "/reviews/write/" + confirmedPlanId;
+                recommendationContainer.style.display = 'none';
+                confirmationContainer.style.display = 'block';
+                errorContainer.style.display = 'none';
+            })
+            .catch(error => {
+                showError(error.message);
+            });
+        }
+
+        // 오류 표시
+        function showError(message) {
+            recommendationContainer.style.display = 'none';
+            confirmationContainer.style.display = 'none';
+            errorContainer.style.display = 'block';
+            errorMessage.textContent = message;
+        }
+
+        // 오류에서 돌아가기
+        backBtn.addEventListener('click', function() {
+            recommendationContainer.style.display = 'block';
+            confirmationContainer.style.display = 'none';
+            errorContainer.style.display = 'none';
+        });
+
+        // 이벤트 리스너 연결
+        if (refreshBtn) {
+            refreshBtn.addEventListener('click', refreshRecommendation);
+        }
+        
+        // 확정 버튼 이벤트 리스너 연결
+        if (confirmBtn) {
+            confirmBtn.addEventListener('click', confirmPlan);
+        }
+    });
+</script>
+
+{{>layout/footer}} 

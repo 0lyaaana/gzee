@@ -1,0 +1,60 @@
+{{>layout/header}}
+
+<div class="container">
+    <div class="row mt-5">
+        <div class="col-md-3">
+            {{>mypage/sidebar}}
+        </div>
+        <div class="col-md-9">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4>프로필 수정</h4>
+                </div>
+                <div class="card-body">
+                    {{#errorMessage}}
+                        <div class="alert alert-danger">
+                            {{errorMessage}}
+                        </div>
+                    {{/errorMessage}}
+                    <form action="/mypage/profile" method="post">
+                        <div class="mb-3">
+                            <label for="name" class="form-label">이름</label>
+                            <input type="text" class="form-control" id="name" name="name" value="{{updateRequest.name}}" required>
+                            {{#name}}
+                                <div class="invalid-feedback d-block">
+                                    {{name}}
+                                </div>
+                            {{/name}}
+                        </div>
+                        <div class="mb-3">
+                            <label for="nickname" class="form-label">닉네임</label>
+                            <input type="text" class="form-control" id="nickname" name="nickname" value="{{updateRequest.nickname}}" required>
+                            {{#nickname}}
+                                <div class="invalid-feedback d-block">
+                                    {{nickname}}
+                                </div>
+                            {{/nickname}}
+                        </div>
+                        <div class="mb-3">
+                            <label for="phone" class="form-label">전화번호</label>
+                            <input type="text" class="form-control" id="phone" name="phone" value="{{updateRequest.phone}}" placeholder="010-0000-0000" required>
+                            {{#phone}}
+                                <div class="invalid-feedback d-block">
+                                    {{phone}}
+                                </div>
+                            {{/phone}}
+                        </div>
+                        <div class="mb-3">
+                            <label for="email" class="form-label">이메일</label>
+                            <input type="email" class="form-control" id="email" value="{{user.email}}" disabled>
+                            <small class="form-text text-muted">이메일은 변경할 수 없습니다.</small>
+                        </div>
+                        <button type="submit" class="btn btn-primary">저장</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{>layout/footer}} 
