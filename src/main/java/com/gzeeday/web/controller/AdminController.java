@@ -46,7 +46,7 @@ public class AdminController {
             return "redirect:/?error=권한이 없습니다.";
         }
         
-        List<RecommendationDto.ResponseDto> recommendations = recommendationService.findAll();
+        List<RecommendationDto.ListResponseDto> recommendations = recommendationService.findAll();
         
         model.addAttribute("user", userService.findById(user.getId()));
         model.addAttribute("recommendations", recommendations);
@@ -137,7 +137,7 @@ public class AdminController {
         }
         
         try {
-            recommendationService.update(id, requestDto, user.getId());
+            recommendationService.update(id, requestDto);
             return "redirect:/admin/recommendations?edit=success";
         } catch (IllegalArgumentException e) {
             model.addAttribute("user", userService.findById(user.getId()));
@@ -158,7 +158,7 @@ public class AdminController {
         }
         
         try {
-            recommendationService.delete(id, user.getId());
+            recommendationService.delete(id);
             return "redirect:/admin/recommendations?delete=success";
         } catch (IllegalArgumentException e) {
             return "redirect:/admin/recommendations?error=" + e.getMessage();

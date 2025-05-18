@@ -21,8 +21,11 @@ public class RecommendationService {
 
     @Transactional
     public Long save(RecommendationDto.RequestDto requestDto, Long userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+        User user = null;
+        if (userId != null) {
+            user = userRepository.findById(userId)
+                    .orElse(null);
+        }
         
         Recommendation recommendation = requestDto.toEntity(user);
         recommendationRepository.save(recommendation);
@@ -31,33 +34,17 @@ public class RecommendationService {
     }
 
     @Transactional
-    public Long update(Long id, RecommendationDto.RequestDto requestDto, Long userId) {
+    public void update(Long id, RecommendationDto.RequestDto requestDto) {
         Recommendation recommendation = recommendationRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("해당 추천을 찾을 수 없습니다."));
-        
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
-        
-        if (recommendation.getCreatedBy() != null && !recommendation.getCreatedBy().getId().equals(user.getId())) {
-            throw new IllegalArgumentException("해당 추천을 수정할 권한이 없습니다.");
-        }
+                .orElseThrow(() -> new IllegalArgumentException("해당 활동 추천을 찾을 수 없습니다."));
         
         recommendation.update(requestDto.getTitle(), requestDto.getDescription());
-        
-        return id;
     }
 
     @Transactional
-    public void delete(Long id, Long userId) {
+    public void delete(Long id) {
         Recommendation recommendation = recommendationRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("해당 추천을 찾을 수 없습니다."));
-        
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
-        
-        if (recommendation.getCreatedBy() != null && !recommendation.getCreatedBy().getId().equals(user.getId())) {
-            throw new IllegalArgumentException("해당 추천을 삭제할 권한이 없습니다.");
-        }
+                .orElseThrow(() -> new IllegalArgumentException("해당 활동 추천을 찾을 수 없습니다."));
         
         recommendationRepository.delete(recommendation);
     }
@@ -65,15 +52,15 @@ public class RecommendationService {
     @Transactional(readOnly = true)
     public RecommendationDto.ResponseDto findById(Long id) {
         Recommendation recommendation = recommendationRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("해당 추천을 찾을 수 없습니다."));
+                .orElseThrow(() -> new IllegalArgumentException("해당 활동 추천을 찾을 수 없습니다."));
         
         return new RecommendationDto.ResponseDto(recommendation);
     }
 
     @Transactional(readOnly = true)
-    public List<RecommendationDto.ResponseDto> findAll() {
+    public List<RecommendationDto.ListResponseDto> findAll() {
         return recommendationRepository.findAllByOrderByCreatedAtDesc().stream()
-                .map(RecommendationDto.ResponseDto::new)
+                .map(RecommendationDto.ListResponseDto::new)
                 .collect(Collectors.toList());
     }
 
@@ -82,7 +69,7 @@ public class RecommendationService {
         Recommendation recommendation = recommendationRepository.findRandomRecommendation();
         
         if (recommendation == null) {
-            throw new IllegalArgumentException("추천 목록이 비어있습니다.");
+            throw new IllegalArgumentException("추천 활동이 없습니다.");
         }
         
         return new RecommendationDto.ResponseDto(recommendation);

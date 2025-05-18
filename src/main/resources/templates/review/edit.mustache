@@ -14,7 +14,7 @@
                         </div>
                     {{/errorMessage}}
                     
-                    <form action="/reviews/edit/{{reviewId}}" method="post">
+                    <form action="/reviews/edit/{{reviewId}}" method="post" enctype="multipart/form-data">
                         <div class="mb-3">
                             <label for="title" class="form-label">제목</label>
                             <input type="text" class="form-control" id="title" name="title" value="{{title}}" required>
@@ -32,28 +32,32 @@
                         </div>
                         
                         <div class="mb-3">
-                            <label for="imageUrl" class="form-label">이미지 URL (선택사항)</label>
-                            <input type="text" class="form-control" id="imageUrl" name="imageUrl" value="{{imageUrl}}">
+                            <label for="imageFile" class="form-label">이미지 첨부 (선택사항)</label>
+                            {{#imageUrl}}
+                                <div class="mb-2">
+                                    <img src="{{imageUrl}}" alt="현재 이미지" class="img-thumbnail" style="max-height: 100px">
+                                    <div class="form-text">현재 이미지를 유지하려면 새 파일을 선택하지 마세요.</div>
+                                </div>
+                                <input type="hidden" name="existingImageUrl" value="{{imageUrl}}">
+                            {{/imageUrl}}
+                            <input type="file" class="form-control" id="imageFile" name="imageFile" accept="image/*">
+                            <div class="form-text">JPG, PNG 형식의 이미지 파일을 업로드할 수 있습니다.</div>
                         </div>
                         
                         <div class="mb-3">
                             <label class="form-label">별점</label>
                             <div class="star-rating">
-                                <div class="btn-group" role="group">
-                                    <input type="radio" class="btn-check" name="starRating" id="star1" value="1" {{#isStar1}}checked{{/isStar1}} required>
-                                    <label class="btn btn-outline-warning" for="star1">★</label>
-                                    
-                                    <input type="radio" class="btn-check" name="starRating" id="star2" value="2" {{#isStar2}}checked{{/isStar2}}>
-                                    <label class="btn btn-outline-warning" for="star2">★★</label>
-                                    
-                                    <input type="radio" class="btn-check" name="starRating" id="star3" value="3" {{#isStar3}}checked{{/isStar3}}>
-                                    <label class="btn btn-outline-warning" for="star3">★★★</label>
-                                    
-                                    <input type="radio" class="btn-check" name="starRating" id="star4" value="4" {{#isStar4}}checked{{/isStar4}}>
-                                    <label class="btn btn-outline-warning" for="star4">★★★★</label>
-                                    
-                                    <input type="radio" class="btn-check" name="starRating" id="star5" value="5" {{#isStar5}}checked{{/isStar5}}>
-                                    <label class="btn btn-outline-warning" for="star5">★★★★★</label>
+                                <div class="rating">
+                                    <input type="radio" id="star5" name="starRating" value="5" {{#isStar5}}checked{{/isStar5}} required>
+                                    <label for="star5" class="star">★</label>
+                                    <input type="radio" id="star4" name="starRating" value="4" {{#isStar4}}checked{{/isStar4}}>
+                                    <label for="star4" class="star">★</label>
+                                    <input type="radio" id="star3" name="starRating" value="3" {{#isStar3}}checked{{/isStar3}}>
+                                    <label for="star3" class="star">★</label>
+                                    <input type="radio" id="star2" name="starRating" value="2" {{#isStar2}}checked{{/isStar2}}>
+                                    <label for="star2" class="star">★</label>
+                                    <input type="radio" id="star1" name="starRating" value="1" {{#isStar1}}checked{{/isStar1}}>
+                                    <label for="star1" class="star">★</label>
                                 </div>
                             </div>
                             {{#validationErrors.starRating}}
@@ -72,34 +76,76 @@
     </div>
 </div>
 
+<style>
+    .rating {
+        display: flex;
+        flex-direction: row-reverse;
+        justify-content: flex-end;
+    }
+    
+    .rating input {
+        display: none;
+    }
+    
+    .rating label {
+        cursor: pointer;
+        font-size: 30px;
+        color: #ddd;
+        transition: color 0.3s;
+        margin-right: 5px;
+    }
+    
+    .rating input:checked ~ label {
+        color: #ffc107;
+    }
+    
+    .rating label:hover,
+    .rating label:hover ~ label,
+    .rating input:hover ~ label {
+        color: #ffdb70;
+    }
+</style>
+
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // 별점 버튼 클릭 시 시각적 효과
-        const starButtons = document.querySelectorAll('.btn-outline-warning');
-        starButtons.forEach(function(button, index) {
-            button.addEventListener('click', function() {
-                // 모든 버튼 리셋
-                starButtons.forEach(function(btn) {
-                    btn.classList.remove('active');
-                });
-                
-                // 클릭한 버튼까지 활성화
-                for (let i = 0; i <= index; i++) {
-                    starButtons[i].classList.add('active');
-                }
-            });
-        });
-        
-        // 초기 별점 표시
+        // 별점 초기 표시 (수정된 부분)
         const starRating = document.querySelector('input[name="starRating"]:checked');
         if (starRating) {
+            const stars = document.querySelectorAll('.rating label');
             const rating = parseInt(starRating.value);
-            for (let i = 0; i < rating; i++) {
-                if (starButtons[i]) {
-                    starButtons[i].classList.add('active');
+            
+            // 선택된 별점과 그 왼쪽의 별들에 색상 적용
+            for (let i = 0; i < stars.length; i++) {
+                const starValue = 5 - i; // 별점 값은 5부터 1까지 (오른쪽에서 왼쪽으로)
+                if (starValue <= rating) {
+                    stars[i].style.color = '#ffc107'; // 선택된 별 색상
                 }
             }
         }
+
+        // 별점 라벨 클릭 이벤트 추가
+        const starLabels = document.querySelectorAll('.rating label');
+        starLabels.forEach(function(label) {
+            label.addEventListener('click', function() {
+                const radioId = this.getAttribute('for');
+                const radio = document.getElementById(radioId);
+                if (radio) {
+                    radio.checked = true;
+                    
+                    // 모든 별 색상 초기화
+                    starLabels.forEach(l => l.style.color = '#ddd');
+                    
+                    // 선택된 별점과 그 왼쪽의 별들에 색상 적용
+                    const rating = parseInt(radio.value);
+                    for (let i = 0; i < starLabels.length; i++) {
+                        const starValue = 5 - i; // 별점 값은 5부터 1까지 (오른쪽에서 왼쪽으로)
+                        if (starValue <= rating) {
+                            starLabels[i].style.color = '#ffc107';
+                        }
+                    }
+                }
+            });
+        });
     });
 </script>
 

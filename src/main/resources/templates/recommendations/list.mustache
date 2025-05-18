@@ -1,0 +1,59 @@
+{{>layout/header}}
+
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0">활동 추천 목록</h4>
+                    <a href="/recommendations/new" class="btn btn-light btn-sm">새 활동 추천하기</a>
+                </div>
+                <div class="card-body">
+                    {{#successMessage}}
+                        <div class="alert alert-success" role="alert">
+                            {{successMessage}}
+                        </div>
+                    {{/successMessage}}
+                    
+                    {{#errorMessage}}
+                        <div class="alert alert-danger" role="alert">
+                            {{errorMessage}}
+                        </div>
+                    {{/errorMessage}}
+                    
+                    {{^recommendations}}
+                        <div class="alert alert-info">
+                            등록된 활동 추천이 없습니다.
+                        </div>
+                    {{/recommendations}}
+                    
+                    <div class="row">
+                        {{#recommendations}}
+                            <div class="col-md-6 mb-4">
+                                <div class="card h-100">
+                                    <div class="card-body">
+                                        <h5 class="card-title">{{title}}</h5>
+                                        <p class="card-text">{{description}}</p>
+                                    </div>
+                                    <div class="card-footer d-flex justify-content-between">
+                                        <div>
+                                            <a href="/recommendations/{{id}}" class="btn btn-sm btn-outline-primary">상세보기</a>
+                                        </div>
+                                        <div>
+                                            <a href="/recommendations/edit/{{id}}" class="btn btn-sm btn-outline-secondary">수정</a>
+                                            <form action="/recommendations/delete/{{id}}" method="post" class="d-inline">
+                                                <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('정말 삭제하시겠습니까?');">삭제</button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {{/recommendations}}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{{>layout/footer}} 

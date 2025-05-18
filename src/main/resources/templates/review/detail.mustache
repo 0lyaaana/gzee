@@ -21,12 +21,10 @@
                                 <small class="text-muted ms-2">{{review.createdAt}}</small>
                             </div>
                             <div>
-                                {{#review.isAuthor}}
-                                    <a href="/reviews/edit/{{review.id}}" class="btn btn-sm btn-outline-secondary">수정</a>
-                                    <form action="/reviews/delete/{{review.id}}" method="post" class="d-inline">
-                                        <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('정말 삭제하시겠습니까?');">삭제</button>
-                                    </form>
-                                {{/review.isAuthor}}
+                                <a href="/reviews/edit/{{review.id}}" class="btn btn-sm btn-outline-secondary">수정</a>
+                                <form action="/reviews/delete/{{review.id}}" method="post" class="d-inline">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('정말 삭제하시겠습니까?');">삭제</button>
+                                </form>
                             </div>
                         </div>
                         
@@ -36,10 +34,9 @@
                                     <div>
                                         <span class="text-muted">추천 활동:</span> {{review.recommendationTitle}}
                                     </div>
-                                    <div>
-                                        {{#review.starRating}}
-                                            <span class="text-warning">★</span>
-                                        {{/review.starRating}}
+                                    <div class="star-display">
+                                        <!-- 별점을 동적으로 생성 -->
+                                        <span class="text-warning" id="star-display-container"></span>
                                     </div>
                                 </div>
                             </div>
@@ -47,7 +44,7 @@
                                 <div class="mb-3">
                                     {{#review.imageUrl}}
                                         <div class="text-center mb-3">
-                                            <img src="{{review.imageUrl}}" alt="후기 이미지" class="img-fluid rounded">
+                                            <img src="{{review.imageUrl}}" alt="후기 이미지" class="img-fluid rounded" style="max-height: 400px;">
                                         </div>
                                     {{/review.imageUrl}}
                                     <div class="review-content">
@@ -71,7 +68,6 @@
                             <h5 class="mb-0">댓글</h5>
                         </div>
                         <div class="card-body">
-                            {{#isLoggedIn}}
                             <form id="comment-form">
                                 <div class="mb-3">
                                     <textarea class="form-control" id="comment-content" rows="3" placeholder="댓글을 입력하세요" required></textarea>
@@ -80,12 +76,6 @@
                                     <button type="submit" class="btn btn-primary">댓글 작성</button>
                                 </div>
                             </form>
-                            {{/isLoggedIn}}
-                            {{^isLoggedIn}}
-                            <div class="alert alert-info">
-                                <p>댓글을 작성하려면 <a href="/auth/login" class="alert-link">로그인</a>이 필요합니다.</p>
-                            </div>
-                            {{/isLoggedIn}}
                             
                             <hr>
                             
@@ -107,6 +97,17 @@
         const commentsContainer = document.getElementById('comments-container');
         const likeButton = document.getElementById('like-button');
         const likeCount = document.getElementById('like-count');
+        
+        // 별점 표시 초기화
+        const starRating = {{review.starRating}};
+        const starDisplayContainer = document.getElementById('star-display-container');
+        if (starDisplayContainer) {
+            let stars = '';
+            for (let i = 0; i < starRating; i++) {
+                stars += '★';
+            }
+            starDisplayContainer.textContent = stars;
+        }
         
         // 댓글 불러오기
         function loadComments() {

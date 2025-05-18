@@ -34,7 +34,7 @@ public class CommentController {
         Long userId = 1L; // 기본 사용자 ID 설정
         
         try {
-            Long commentId = commentService.save(reviewId, requestDto, userId);
+            Long commentId = commentService.save(reviewId, requestDto, user != null ? user.getId() : userId);
             return ResponseEntity.ok(commentId);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
@@ -49,7 +49,7 @@ public class CommentController {
         Long userId = 1L; // 기본 사용자 ID 설정
         
         try {
-            Long commentId = commentService.update(id, requestDto, userId);
+            Long commentId = commentService.update(id, requestDto, user != null ? user.getId() : userId);
             return ResponseEntity.ok(commentId);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(e.getMessage());

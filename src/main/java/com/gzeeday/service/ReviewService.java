@@ -145,11 +145,6 @@ public class ReviewService {
         Review review = reviewRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("해당 후기를 찾을 수 없습니다."));
         
-        // 작성자 확인
-        if (!review.getUser().getId().equals(userId)) {
-            throw new IllegalArgumentException("후기를 수정할 권한이 없습니다.");
-        }
-        
         review.update(requestDto.getTitle(), requestDto.getContent(), requestDto.getImageUrl(), requestDto.getStarRating());
     }
 
@@ -158,11 +153,13 @@ public class ReviewService {
         Review review = reviewRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("해당 후기를 찾을 수 없습니다."));
         
-        // 작성자 확인
-        if (!review.getUser().getId().equals(userId)) {
-            throw new IllegalArgumentException("후기를 삭제할 권한이 없습니다.");
-        }
+        // 댓글 먼저 삭제 (외래키 제약조건 오류 해결)
+        commentRepository.deleteAllByReview(review);
         
+        // 좋아요 삭제
+        likeRepository.deleteAllByReview(review);
+        
+        // 리뷰 삭제
         reviewRepository.delete(review);
     }
 

@@ -6,7 +6,7 @@
             <div class="card">
                 <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
                     <h4 class="mb-0">후기 게시판</h4>
-                    <a href="/random" class="btn btn-light btn-sm">새 글 작성</a>
+                    <a href="/recommendations" class="btn btn-light btn-sm">활동 추천</a>
                 </div>
                 <div class="card-body">
                     {{#deleteMessage}}
@@ -45,11 +45,18 @@
                                     </div>
                                 </div>
                                 <h6 class="card-subtitle mb-2 text-muted">{{recommendationTitle}}</h6>
-                                <div class="mb-2">
+                                <div class="mb-2 star-rating">
                                     {{#starRating}}
                                         <span class="text-warning">★</span>
                                     {{/starRating}}
                                 </div>
+                                
+                                {{#imageUrl}}
+                                <div class="review-image mb-2">
+                                    <img src="{{imageUrl}}" alt="후기 이미지" class="img-fluid rounded" style="max-height: 200px;">
+                                </div>
+                                {{/imageUrl}}
+                                
                                 <div class="d-flex justify-content-between align-items-center">
                                     <div>
                                         <span class="badge bg-info text-dark"><i class="bi bi-hand-thumbs-up"></i> {{likeCount}}</span>
@@ -96,6 +103,16 @@
         </div>
     </div>
 </div>
+
+<style>
+    .star-rating {
+        display: flex;
+    }
+    
+    .star-rating span {
+        margin-right: 2px;
+    }
+</style>
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
