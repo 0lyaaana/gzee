@@ -21,10 +21,12 @@
                                 <small class="text-muted ms-2">{{review.createdAt}}</small>
                             </div>
                             <div>
-                                <a href="/reviews/edit/{{review.id}}" class="btn btn-sm btn-outline-secondary">수정</a>
-                                <form action="/reviews/delete/{{review.id}}" method="post" class="d-inline">
-                                    <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('정말 삭제하시겠습니까?');">삭제</button>
-                                </form>
+                                {{#review.isAuthor}}
+                                    <a href="/reviews/edit/{{review.id}}" class="btn btn-sm btn-outline-secondary">수정</a>
+                                    <form action="/reviews/delete/{{review.id}}" method="post" class="d-inline">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('정말 삭제하시겠습니까?');">삭제</button>
+                                    </form>
+                                {{/review.isAuthor}}
                             </div>
                         </div>
                         
@@ -42,11 +44,6 @@
                             </div>
                             <div class="card-body">
                                 <div class="mb-3">
-                                    {{#review.imageUrl}}
-                                        <div class="text-center mb-3">
-                                            <img src="{{review.imageUrl}}" alt="후기 이미지" class="img-fluid rounded" style="max-height: 400px;">
-                                        </div>
-                                    {{/review.imageUrl}}
                                     <div class="review-content">
                                         {{review.content}}
                                     </div>

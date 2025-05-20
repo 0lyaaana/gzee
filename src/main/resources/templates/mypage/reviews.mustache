@@ -22,11 +22,7 @@
                             <div class="card-body">
                                 <h5 class="card-title">{{title}}</h5>
                                 <h6 class="card-subtitle mb-2 text-muted">{{recommendationTitle}}</h6>
-                                <div class="mb-2">
-                                    {{#starRating}}
-                                        <span class="text-warning">★</span>
-                                    {{/starRating}}
-                                </div>
+                                <div class="mb-2 star-rating" data-star-rating="{{starRating}}">                                    <!-- 별점은 JavaScript에서 동적으로 채워집니다 -->                                </div>
                                 <p class="text-muted">작성일: {{createdAt}}</p>
                                 <p class="card-text">
                                     <span class="badge bg-info text-dark"><i class="bi bi-hand-thumbs-up"></i> {{likeCount}}</span>
@@ -42,5 +38,30 @@
         </div>
     </div>
 </div>
+
+<style>
+    .star-rating {
+        display: flex;
+    }
+    
+    .star-rating span {
+        margin-right: 2px;
+    }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // 별점 표시
+        const starRatingElements = document.querySelectorAll('[data-star-rating]');
+        starRatingElements.forEach(function(element) {
+            const rating = parseInt(element.getAttribute('data-star-rating'));
+            let stars = '';
+            for (let i = 0; i < rating; i++) {
+                stars += '<span class="text-warning">★</span>';
+            }
+            element.innerHTML = stars;
+        });
+    });
+</script>
 
 {{>layout/footer}} 

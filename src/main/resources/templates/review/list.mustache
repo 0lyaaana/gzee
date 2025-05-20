@@ -6,7 +6,6 @@
             <div class="card">
                 <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
                     <h4 class="mb-0">후기 게시판</h4>
-                    <a href="/recommendations" class="btn btn-light btn-sm">활동 추천</a>
                 </div>
                 <div class="card-body">
                     {{#deleteMessage}}
@@ -45,11 +44,7 @@
                                     </div>
                                 </div>
                                 <h6 class="card-subtitle mb-2 text-muted">{{recommendationTitle}}</h6>
-                                <div class="mb-2 star-rating">
-                                    {{#starRating}}
-                                        <span class="text-warning">★</span>
-                                    {{/starRating}}
-                                </div>
+                                                                <div class="mb-2 star-rating" data-star-rating="{{starRating}}">                                    <!-- 별점은 JavaScript에서 동적으로 채워집니다 -->                                </div>
                                 
                                 {{#imageUrl}}
                                 <div class="review-image mb-2">
@@ -80,9 +75,16 @@
                                 {{/reviews.first}}
                                 {{^reviews.first}}
                                     <li class="page-item">
-                                        <a class="page-link" href="?page=0">이전</a>
+                                        <a class="page-link" href="?page={{reviews.number-1}}">이전</a>
                                     </li>
                                 {{/reviews.first}}
+                                
+                                <!-- 페이지 번호 -->
+                                {{#pageNumbers}}
+                                    <li class="page-item {{#active}}active{{/active}}">
+                                        <a class="page-link" href="?page={{number}}">{{displayNumber}}</a>
+                                    </li>
+                                {{/pageNumbers}}
                                 
                                 <!-- 다음 페이지 -->
                                 {{#reviews.last}}
@@ -92,7 +94,7 @@
                                 {{/reviews.last}}
                                 {{^reviews.last}}
                                     <li class="page-item">
-                                        <a class="page-link" href="?page=1">다음</a>
+                                        <a class="page-link" href="?page={{reviews.number+1}}">다음</a>
                                     </li>
                                 {{/reviews.last}}
                             </ul>
@@ -114,19 +116,6 @@
     }
 </style>
 
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // 별점 표시
-        const starRatingElements = document.querySelectorAll('[data-star-rating]');
-        starRatingElements.forEach(function(element) {
-            const rating = parseInt(element.getAttribute('data-star-rating'));
-            let stars = '';
-            for (let i = 0; i < rating; i++) {
-                stars += '<i class="fas fa-star"></i>';
-            }
-            element.innerHTML = stars;
-        });
-    });
-</script>
+<script>    document.addEventListener('DOMContentLoaded', function() {        // 별점 표시        const starRatingElements = document.querySelectorAll('[data-star-rating]');        starRatingElements.forEach(function(element) {            const rating = parseInt(element.getAttribute('data-star-rating'));            let stars = '';            for (let i = 0; i < rating; i++) {                stars += '<span class="text-warning">★</span>';            }            element.innerHTML = stars;        });    });</script>
 
 {{>layout/footer}} 

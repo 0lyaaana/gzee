@@ -28,8 +28,28 @@
             align-items: center;
         }
         
-        .navbar-brand img {
-            margin-right: 10px;
+        .logo-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+        
+        .logo-text {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #ffecba;
+        }
+        
+        .logo-arrow {
+            color: #ffecba;
+            font-size: 1.2rem;
+            line-height: 1;
+        }
+        
+        .logo-subtitle {
+            font-size: 0.8rem;
+            color: #ffecba;
         }
         
         .nav-link {
@@ -66,8 +86,9 @@
     <nav class="navbar navbar-expand-lg navbar-dark mb-4">
         <div class="container">
             <a class="navbar-brand" href="/random">
-                <img src="/images/logo.png" alt="GZEE 로고" height="30">
-                GZEE
+                <div class="logo-wrapper">
+                    <div class="logo-text">GZEE</div>
+                </div>
             </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
                     aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">

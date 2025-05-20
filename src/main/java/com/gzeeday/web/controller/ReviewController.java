@@ -73,6 +73,13 @@ public class ReviewController {
         model.addAttribute("endPage", endPage);
         model.addAttribute("totalPages", totalPages);
         
+        // 페이지 번호 리스트 생성
+        java.util.List<PageNumberDto> pageNumbers = new java.util.ArrayList<>();
+        for (int i = startPage; i <= endPage; i++) {
+            pageNumbers.add(new PageNumberDto(i, i == currentPage, i + 1));
+        }
+        model.addAttribute("pageNumbers", pageNumbers);
+        
         return "review/list";
     }
 
@@ -331,5 +338,30 @@ public class ReviewController {
         
         // 웹에서 접근 가능한 URL 경로 반환
         return "/uploads/" + fileName;
+    }
+
+    // 페이지 번호 DTO
+    public static class PageNumberDto {
+        private int number;
+        private boolean active;
+        private int displayNumber;
+        
+        public PageNumberDto(int number, boolean active, int displayNumber) {
+            this.number = number;
+            this.active = active;
+            this.displayNumber = displayNumber;
+        }
+        
+        public int getNumber() {
+            return number;
+        }
+        
+        public boolean isActive() {
+            return active;
+        }
+        
+        public int getDisplayNumber() {
+            return displayNumber;
+        }
     }
 } 
