@@ -3,9 +3,15 @@ package com.gzeeday.web.controller;
 import com.gzeeday.config.auth.LoginUser;
 import com.gzeeday.config.auth.dto.SessionUser;
 import com.gzeeday.service.RecommendationService;
+import com.gzeeday.service.UserRecommendationService;
 import com.gzeeday.service.UserService;
 import com.gzeeday.web.dto.recommendation.RecommendationDto;
+import com.gzeeday.web.dto.recommendation.UserRecommendationDto;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -19,6 +25,7 @@ import java.util.List;
 public class RecommendationController {
 
     private final RecommendationService recommendationService;
+    private final UserRecommendationService userRecommendationService;
     private final UserService userService;
 
     @GetMapping
@@ -45,54 +52,6 @@ public class RecommendationController {
         model.addAttribute("recommendation", recommendation);
         
         return "recommendations/detail";
-    }
-
-    @GetMapping("/new")
-    public String writeForm(@LoginUser SessionUser user, Model model) {
-        if (user == null) {
-            return "redirect:/auth/login";
-        }
-        
-        model.addAttribute("user", userService.findById(user.getId()));
-        return "recommendations/write";
-    }
-
-    @PostMapping("/new")
-    public String write(@RequestParam("title") String title,
-                        @RequestParam("description") String description,
-                        @LoginUser SessionUser user, Model model,
-                        RedirectAttributes redirectAttributes) {
-        // 입력값 검증
-        if (title == null || title.trim().isEmpty() || description == null || description.trim().isEmpty()) {
-            if (user != null) {
-                model.addAttribute("user", userService.findById(user.getId()));
-            }
-            model.addAttribute("title", title);
-            model.addAttribute("description", description);
-            model.addAttribute("errorMessage", "제목과 설명은 필수 입력 항목입니다.");
-            return "recommendations/write";
-        }
-        
-        try {
-            // RecommendationDto.RequestDto 객체 생성
-            RecommendationDto.RequestDto requestDto = new RecommendationDto.RequestDto(title, description);
-            
-            Long recommendationId = recommendationService.save(requestDto, user != null ? user.getId() : null);
-            
-            // 성공 메시지 추가
-            redirectAttributes.addFlashAttribute("successMessage", "활동 추천이 성공적으로 등록되었습니다.");
-            
-            // 활동 추천 목록으로 리다이렉트
-            return "redirect:/recommendations";
-        } catch (Exception e) {
-            if (user != null) {
-                model.addAttribute("user", userService.findById(user.getId()));
-            }
-            model.addAttribute("title", title);
-            model.addAttribute("description", description);
-            model.addAttribute("errorMessage", "활동 추천 작성 중 오류가 발생했습니다: " + e.getMessage());
-            return "recommendations/write";
-        }
     }
 
     @GetMapping("/edit/{id}")
