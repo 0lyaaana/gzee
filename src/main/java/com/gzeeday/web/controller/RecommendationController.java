@@ -49,10 +49,11 @@ public class RecommendationController {
 
     @GetMapping("/new")
     public String writeForm(@LoginUser SessionUser user, Model model) {
-        if (user != null) {
-            model.addAttribute("user", userService.findById(user.getId()));
+        if (user == null) {
+            return "redirect:/auth/login";
         }
         
+        model.addAttribute("user", userService.findById(user.getId()));
         return "recommendations/write";
     }
 
