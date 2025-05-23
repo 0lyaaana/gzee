@@ -17,8 +17,7 @@
                     <div class="mb-4">
                         <div class="d-flex justify-content-between align-items-center mb-2">
                             <div>
-                                <span class="badge bg-secondary">{{review.author}}</span>
-                                <small class="text-muted ms-2">{{review.createdAt}}</small>
+                                <small class="text-muted">{{review.createdAt}}</small>
                             </div>
                             <div>
                                 {{#review.isAuthor}}
@@ -125,21 +124,18 @@
                     
                     comments.forEach(comment => {
                         const commentHtml = `
-                            <div class="comment mb-3" id="comment-${comment.id}">
+                            <div class="comment mb-3 border-bottom pb-2" id="comment-${comment.id}">
                                 <div class="d-flex justify-content-between">
                                     <div>
-                                        <strong>${comment.author}</strong>
-                                        <small class="text-muted ms-2">${comment.createdAt}</small>
-                                        ${comment.isEdited ? '<small class="text-muted">(수정됨)</small>' : ''}
+                                        <small class="text-muted">${comment.createdAt}</small>
+                                        ${comment.isEdited ? '<small class="text-muted ms-1">(수정됨)</small>' : ''}
                                     </div>
-                                    ${comment.isAuthor ? `
-                                        <div>
-                                            <button class="btn btn-sm btn-link edit-comment" data-id="${comment.id}">수정</button>
-                                            <button class="btn btn-sm btn-link text-danger delete-comment" data-id="${comment.id}">삭제</button>
-                                        </div>
-                                    ` : ''}
+                                    <div class="comment-actions">
+                                        <button class="btn btn-sm btn-link text-primary p-0 me-2 edit-comment" data-id="${comment.id}">수정</button>
+                                        <button class="btn btn-sm btn-link text-danger p-0 delete-comment" data-id="${comment.id}">삭제</button>
+                                    </div>
                                 </div>
-                                <div class="comment-content mt-1">${comment.content}</div>
+                                <div class="comment-content mt-2 mb-2">${comment.content}</div>
                                 <div class="edit-form d-none">
                                     <textarea class="form-control mb-2">${comment.content}</textarea>
                                     <div class="text-end">
@@ -148,7 +144,6 @@
                                     </div>
                                 </div>
                             </div>
-                            <hr>
                         `;
                         commentsContainer.innerHTML += commentHtml;
                     });
@@ -231,7 +226,7 @@
                 })
                 .then(response => {
                     if (!response.ok) {
-                        return response.text().then(text => { throw new Error(text) });
+                        throw new Error('댓글 작성에 실패했습니다.');
                     }
                     return response.json();
                 })
@@ -257,7 +252,7 @@
             })
             .then(response => {
                 if (!response.ok) {
-                    return response.text().then(text => { throw new Error(text) });
+                    throw new Error('댓글 수정에 실패했습니다.');
                 }
                 return response.json();
             })
@@ -277,9 +272,9 @@
             })
             .then(response => {
                 if (!response.ok) {
-                    return response.text().then(text => { throw new Error(text) });
+                    throw new Error('댓글 삭제에 실패했습니다.');
                 }
-                return response.json();
+                return response;
             })
             .then(() => {
                 loadComments();
@@ -297,7 +292,7 @@
             })
             .then(response => {
                 if (!response.ok) {
-                    return response.text().then(text => { throw new Error(text) });
+                    throw new Error('공감 처리에 실패했습니다.');
                 }
                 return response.json();
             })

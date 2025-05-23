@@ -43,7 +43,7 @@ spring:
             enable: true
 
 server:
-  port: 8085
+  port: 8080
   servlet:
     encoding:
       charset: UTF-8

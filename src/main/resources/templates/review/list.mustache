@@ -39,18 +39,11 @@
                                     <h5 class="card-title">
                                         <a href="/reviews/{{id}}" class="text-decoration-none text-dark">{{title}}</a>
                                     </h5>
-                                    <div>
-                                        <span class="badge bg-secondary">{{author}}</span>
-                                    </div>
                                 </div>
                                 <h6 class="card-subtitle mb-2 text-muted">{{recommendationTitle}}</h6>
-                                                                <div class="mb-2 star-rating" data-star-rating="{{starRating}}">                                    <!-- 별점은 JavaScript에서 동적으로 채워집니다 -->                                </div>
-                                
-                                {{#imageUrl}}
-                                <div class="review-image mb-2">
-                                    <img src="{{imageUrl}}" alt="후기 이미지" class="img-fluid rounded" style="max-height: 200px;">
+                                <div class="mb-2 star-rating" data-star-rating="{{starRating}}">
+                                    <!-- 별점은 JavaScript에서 동적으로 채워집니다 -->
                                 </div>
-                                {{/imageUrl}}
                                 
                                 <div class="d-flex justify-content-between align-items-center">
                                     <div>
@@ -116,6 +109,19 @@
     }
 </style>
 
-<script>    document.addEventListener('DOMContentLoaded', function() {        // 별점 표시        const starRatingElements = document.querySelectorAll('[data-star-rating]');        starRatingElements.forEach(function(element) {            const rating = parseInt(element.getAttribute('data-star-rating'));            let stars = '';            for (let i = 0; i < rating; i++) {                stars += '<span class="text-warning">★</span>';            }            element.innerHTML = stars;        });    });</script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // 별점 표시
+        const starRatingElements = document.querySelectorAll('[data-star-rating]');
+        starRatingElements.forEach(function(element) {
+            const rating = parseInt(element.getAttribute('data-star-rating'));
+            let stars = '';
+            for (let i = 0; i < rating; i++) {
+                stars += '<span class="text-warning">★</span>';
+            }
+            element.innerHTML = stars;
+        });
+    });
+</script>
 
 {{>layout/footer}} 

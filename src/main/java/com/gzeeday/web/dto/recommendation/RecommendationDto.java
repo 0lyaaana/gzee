@@ -1,7 +1,6 @@
 package com.gzeeday.web.dto.recommendation;
 
 import com.gzeeday.domain.recommendation.Recommendation;
-import com.gzeeday.domain.user.User;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -29,11 +28,11 @@ public class RecommendationDto {
             this.description = description;
         }
 
-        public Recommendation toEntity(User createdBy) {
+        public Recommendation toEntity(String authorName) {
             return Recommendation.builder()
                     .title(title)
                     .description(description)
-                    .createdBy(createdBy)
+                    .authorName(authorName)
                     .build();
         }
     }
@@ -43,7 +42,7 @@ public class RecommendationDto {
         private Long id;
         private String title;
         private String description;
-        private String createdBy;
+        private String authorName;
         private String createdAt;
 
         @Builder
@@ -51,7 +50,7 @@ public class RecommendationDto {
             this.id = entity.getId();
             this.title = entity.getTitle();
             this.description = entity.getDescription();
-            this.createdBy = entity.getCreatedBy() != null ? entity.getCreatedBy().getNickname() : "관리자";
+            this.authorName = entity.getAuthorName() != null ? entity.getAuthorName() : "관리자";
             this.createdAt = entity.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
         }
     }
@@ -61,7 +60,7 @@ public class RecommendationDto {
         private Long id;
         private String title;
         private String description;
-        private String createdBy;
+        private String authorName;
         private String createdAt;
 
         @Builder
@@ -69,7 +68,7 @@ public class RecommendationDto {
             this.id = entity.getId();
             this.title = entity.getTitle();
             this.description = entity.getDescription();
-            this.createdBy = entity.getCreatedBy() != null ? entity.getCreatedBy().getNickname() : "관리자";
+            this.authorName = entity.getAuthorName() != null ? entity.getAuthorName() : "관리자";
             this.createdAt = entity.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
         }
     }

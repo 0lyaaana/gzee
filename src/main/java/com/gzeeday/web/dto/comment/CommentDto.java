@@ -2,7 +2,6 @@ package com.gzeeday.web.dto.comment;
 
 import com.gzeeday.domain.comment.Comment;
 import com.gzeeday.domain.review.Review;
-import com.gzeeday.domain.user.User;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -25,9 +24,9 @@ public class CommentDto {
             this.content = content;
         }
 
-        public Comment toEntity(User user, Review review) {
+        public Comment toEntity(String authorName, Review review) {
             return Comment.builder()
-                    .user(user)
+                    .authorName(authorName)
                     .review(review)
                     .content(content)
                     .build();
@@ -38,19 +37,17 @@ public class CommentDto {
     public static class ResponseDto {
         private Long id;
         private String content;
-        private String author;
+        private String authorName;
         private String createdAt;
         private boolean isEdited;
-        private boolean isAuthor;
 
         @Builder
         public ResponseDto(Comment entity, boolean isAuthor) {
             this.id = entity.getId();
             this.content = entity.getContent();
-            this.author = entity.getUser().getNickname();
+            this.authorName = entity.getAuthorName();
             this.createdAt = entity.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
             this.isEdited = entity.isEdited();
-            this.isAuthor = isAuthor;
         }
     }
 } 

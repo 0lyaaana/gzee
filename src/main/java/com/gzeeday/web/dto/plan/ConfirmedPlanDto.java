@@ -2,7 +2,6 @@ package com.gzeeday.web.dto.plan;
 
 import com.gzeeday.domain.plan.ConfirmedPlan;
 import com.gzeeday.domain.recommendation.Recommendation;
-import com.gzeeday.domain.user.User;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -22,9 +21,9 @@ public class ConfirmedPlanDto {
             this.recommendationId = recommendationId;
         }
 
-        public ConfirmedPlan toEntity(User user, Recommendation recommendation) {
+        public ConfirmedPlan toEntity(String plannerName, Recommendation recommendation) {
             return ConfirmedPlan.builder()
-                    .user(user)
+                    .plannerName(plannerName)
                     .recommendation(recommendation)
                     .confirmedAt(LocalDateTime.now())
                     .build();
@@ -37,6 +36,7 @@ public class ConfirmedPlanDto {
         private Long recommendationId;
         private String title;
         private String description;
+        private String plannerName;
         private String confirmedAt;
         private boolean hasReview;
 
@@ -46,6 +46,7 @@ public class ConfirmedPlanDto {
             this.recommendationId = entity.getRecommendation().getId();
             this.title = entity.getRecommendation().getTitle();
             this.description = entity.getRecommendation().getDescription();
+            this.plannerName = entity.getPlannerName();
             this.confirmedAt = entity.getConfirmedAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
             this.hasReview = hasReview;
         }

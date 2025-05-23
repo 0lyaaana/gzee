@@ -28,21 +28,12 @@
                         </div>
                         
                         <div class="mb-3">
-                            <label for="content" class="form-label">활동 내용</label>
-                            <textarea class="form-control" id="content" name="content" rows="4" required>{{content}}</textarea>
+                            <label for="description" class="form-label">활동 내용</label>
+                            <textarea class="form-control" id="description" name="description" rows="4" required>{{description}}</textarea>
                             <small class="form-text text-muted">어떤 활동인지 자세히 설명해주세요.</small>
-                            {{#validationErrors.content}}
+                            {{#validationErrors.description}}
                                 <div class="text-danger">{{.}}</div>
-                            {{/validationErrors.content}}
-                        </div>
-                        
-                        <div class="mb-3">
-                            <label for="reason" class="form-label">추천 이유</label>
-                            <textarea class="form-control" id="reason" name="reason" rows="3" required>{{reason}}</textarea>
-                            <small class="form-text text-muted">이 활동을 추천하는 이유를 작성해주세요.</small>
-                            {{#validationErrors.reason}}
-                                <div class="text-danger">{{.}}</div>
-                            {{/validationErrors.reason}}
+                            {{/validationErrors.description}}
                         </div>
                         
                         <div class="d-flex justify-content-between">

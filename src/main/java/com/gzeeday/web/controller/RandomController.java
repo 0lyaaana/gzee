@@ -15,6 +15,11 @@ public class RandomController {
 
     private final RecommendationService recommendationService;
 
+    @GetMapping("/")
+    public String home() {
+        return "redirect:/random";
+    }
+
     @GetMapping("/random")
     public String randomPage(Model model) {
         try {

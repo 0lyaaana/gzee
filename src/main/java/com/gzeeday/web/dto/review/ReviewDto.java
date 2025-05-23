@@ -2,7 +2,6 @@ package com.gzeeday.web.dto.review;
 
 import com.gzeeday.domain.plan.ConfirmedPlan;
 import com.gzeeday.domain.review.Review;
-import com.gzeeday.domain.user.User;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -43,9 +42,9 @@ public class ReviewDto {
             this.confirmedPlanId = confirmedPlanId;
         }
 
-        public Review toEntity(User user, ConfirmedPlan confirmedPlan) {
+        public Review toEntity(String authorName, ConfirmedPlan confirmedPlan) {
             return Review.builder()
-                    .user(user)
+                    .authorName(authorName)
                     .confirmedPlan(confirmedPlan)
                     .title(title)
                     .content(content)
@@ -60,10 +59,9 @@ public class ReviewDto {
         private Long id;
         private String title;
         private String content;
-        private String imageUrl;
+        private String authorName;
         private int starRating;
         private String recommendationTitle;
-        private String author;
         private String createdAt;
         private long likeCount;
         private boolean isAuthor;
@@ -74,10 +72,9 @@ public class ReviewDto {
             this.id = entity.getId();
             this.title = entity.getTitle();
             this.content = entity.getContent();
-            this.imageUrl = entity.getImageUrl();
+            this.authorName = entity.getAuthorName();
             this.starRating = entity.getStarRating();
             this.recommendationTitle = entity.getConfirmedPlan().getRecommendation().getTitle();
-            this.author = entity.getUser().getNickname();
             this.createdAt = entity.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm"));
             this.likeCount = likeCount;
             this.isAuthor = isAuthor;
@@ -93,8 +90,8 @@ public class ReviewDto {
     public static class ListResponseDto {
         private Long id;
         private String title;
+        private String authorName;
         private String recommendationTitle;
-        private String author;
         private int starRating;
         private String createdAt;
         private long likeCount;
@@ -104,8 +101,8 @@ public class ReviewDto {
         public ListResponseDto(Review entity, long likeCount, long commentCount) {
             this.id = entity.getId();
             this.title = entity.getTitle();
+            this.authorName = entity.getAuthorName();
             this.recommendationTitle = entity.getConfirmedPlan().getRecommendation().getTitle();
-            this.author = entity.getUser().getNickname();
             this.starRating = entity.getStarRating();
             this.createdAt = entity.getCreatedAt().format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
             this.likeCount = likeCount;
