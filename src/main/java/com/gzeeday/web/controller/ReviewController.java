@@ -89,26 +89,27 @@ public class ReviewController {
 
     @GetMapping("/write/{confirmedPlanId}")
     public String writeForm(@PathVariable Long confirmedPlanId, Model model) {
-        try {
-            // 확정 계획 정보 조회
-            ConfirmedPlanDto.ResponseDto confirmedPlan = confirmedPlanService.findByIdForAnyone(confirmedPlanId);
-            
-            // 이미 후기가 작성되었는지 확인
-            if (confirmedPlan.isHasReview()) {
+        // 확정 계획 정보 조회
+        ConfirmedPlanDto.ResponseDto confirmedPlan = confirmedPlanService.findByIdForAnyone(confirmedPlanId);
+        
+        // 이미 후기가 작성되었는지 확인
+        String reviewState = confirmedPlan.isHasReview() ? "ALREADY_REVIEWED" : "NOT_REVIEWED";
+        
+        switch (reviewState) {
+            case "ALREADY_REVIEWED":
                 return "redirect:/reviews?error=이미 후기가 작성된 확정 계획입니다.";
-            }
-            
-            model.addAttribute("confirmedPlanId", confirmedPlanId);
-            
-            // 빈 필드 초기화
-            model.addAttribute("title", "");
-            model.addAttribute("content", "");
-            
-            model.addAttribute("isStar1", true); // 기본값으로 1점 선택
-            
-            return "review/write";
-        } catch (IllegalArgumentException e) {
-            return "redirect:/reviews?error=" + e.getMessage();
+            case "NOT_REVIEWED":
+                model.addAttribute("confirmedPlanId", confirmedPlanId);
+                
+                // 빈 필드 초기화
+                model.addAttribute("title", "");
+                model.addAttribute("content", "");
+                
+                model.addAttribute("isStar1", true); // 기본값으로 1점 선택
+                
+                return "review/write";
+            default:
+                return "redirect:/reviews";
         }
     }
 
@@ -121,74 +122,65 @@ public class ReviewController {
                         RedirectAttributes redirectAttributes) {
         
         // 입력값 검증
-        if (title == null || title.trim().isEmpty() || content == null || content.trim().isEmpty()) {
-            model.addAttribute("confirmedPlanId", confirmedPlanId);
-            model.addAttribute("title", title);
-            model.addAttribute("content", content);
-            model.addAttribute("errorMessage", "제목과 내용은 필수 입력 항목입니다.");
-            
-            // 별점 선택 상태 유지
-            addStarRatingAttributes(model, starRating);
-            return "review/write";
-        }
+        String validationState = getValidationState(title, content);
         
-        try {
-            // 이미 후기가 작성된 확정 계획인지 확인
-            ConfirmedPlanDto.ResponseDto confirmedPlan = confirmedPlanService.findByIdForAnyone(confirmedPlanId);
-            if (confirmedPlan.isHasReview()) {
-                throw new IllegalArgumentException("이미 후기가 작성된 확정 계획입니다.");
-            }
-            
-            // ReviewDto.RequestDto 객체 생성
-            ReviewDto.RequestDto requestDto = new ReviewDto.RequestDto(title, content, null, starRating, confirmedPlanId);
-            
-            Long reviewId = reviewService.save(requestDto, DEFAULT_AUTHOR_NAME);
-            
-            // 성공 메시지 추가
-            redirectAttributes.addFlashAttribute("successMessage", "후기가 성공적으로 등록되었습니다.");
-            
-            // 후기 게시판 목록으로 리다이렉트
-            return "redirect:/reviews";
-        } catch (IllegalArgumentException e) {
-            model.addAttribute("confirmedPlanId", confirmedPlanId);
-            model.addAttribute("title", title);
-            model.addAttribute("content", content);
-            model.addAttribute("errorMessage", e.getMessage());
-            
-            // 별점 선택 상태 유지
-            addStarRatingAttributes(model, starRating);
-            return "review/write";
-        } catch (Exception e) {
-            // 기타 예외 처리
-            model.addAttribute("confirmedPlanId", confirmedPlanId);
-            model.addAttribute("title", title);
-            model.addAttribute("content", content);
-            model.addAttribute("errorMessage", "후기 작성 중 오류가 발생했습니다: " + e.getMessage());
-            
-            // 별점 선택 상태 유지
-            addStarRatingAttributes(model, starRating);
-            return "review/write";
+        switch (validationState) {
+            case "INVALID":
+                model.addAttribute("confirmedPlanId", confirmedPlanId);
+                model.addAttribute("title", title);
+                model.addAttribute("content", content);
+                model.addAttribute("errorMessage", "제목과 내용은 필수 입력 항목입니다.");
+                
+                // 별점 선택 상태 유지
+                addStarRatingAttributes(model, starRating);
+                return "review/write";
+        }
+
+        // 이미 후기가 작성된 확정 계획인지 확인
+        ConfirmedPlanDto.ResponseDto confirmedPlan = confirmedPlanService.findByIdForAnyone(confirmedPlanId);
+        
+        String reviewState = confirmedPlan.isHasReview() ? "ALREADY_REVIEWED" : "NOT_REVIEWED";
+        
+        switch (reviewState) {
+            case "ALREADY_REVIEWED":
+                model.addAttribute("confirmedPlanId", confirmedPlanId);
+                model.addAttribute("title", title);
+                model.addAttribute("content", content);
+                model.addAttribute("errorMessage", "이미 후기가 작성된 확정 계획입니다.");
+                
+                // 별점 선택 상태 유지
+                addStarRatingAttributes(model, starRating);
+                return "review/write";
+            case "NOT_REVIEWED":
+                // ReviewDto.RequestDto 객체 생성
+                ReviewDto.RequestDto requestDto = new ReviewDto.RequestDto(title, content, null, starRating, confirmedPlanId);
+                
+                Long reviewId = reviewService.save(requestDto, DEFAULT_AUTHOR_NAME);
+                
+                // 성공 메시지 추가
+                redirectAttributes.addFlashAttribute("successMessage", "후기가 성공적으로 등록되었습니다.");
+                
+                // 후기 게시판 목록으로 리다이렉트
+                return "redirect:/reviews";
+            default:
+                return "redirect:/reviews";
         }
     }
 
     @GetMapping("/edit/{id}")
     public String editForm(@PathVariable Long id, Model model) {
-        try {
-            ReviewDto.ResponseDto review = reviewService.findById(id, DEFAULT_AUTHOR_NAME);
+        ReviewDto.ResponseDto review = reviewService.findById(id, DEFAULT_AUTHOR_NAME);
 
-            model.addAttribute("reviewId", id);
-            
-            // 기존 데이터를 개별 필드로 모델에 추가
-            model.addAttribute("title", review.getTitle());
-            model.addAttribute("content", review.getContent());
-            
-            // 별점 선택 상태 설정
-            addStarRatingAttributes(model, review.getStarRating());
-            
-            return "review/edit";
-        } catch (IllegalArgumentException e) {
-            return "redirect:/reviews?error=" + e.getMessage();
-        }
+        model.addAttribute("reviewId", id);
+        
+        // 기존 데이터를 개별 필드로 모델에 추가
+        model.addAttribute("title", review.getTitle());
+        model.addAttribute("content", review.getContent());
+        
+        // 별점 선택 상태 설정
+        addStarRatingAttributes(model, review.getStarRating());
+        
+        return "review/edit";
     }
 
     @PostMapping("/edit/{id}")
@@ -198,41 +190,26 @@ public class ReviewController {
                        @RequestParam("starRating") int starRating,
                        Model model) {
         // 입력값 검증
-        if (title == null || title.trim().isEmpty() || content == null || content.trim().isEmpty()) {
-            model.addAttribute("reviewId", id);
-            model.addAttribute("title", title);
-            model.addAttribute("content", content);
-            model.addAttribute("errorMessage", "제목과 내용은 필수 입력 항목입니다.");
-            
-            // 별점 선택 상태 유지
-            addStarRatingAttributes(model, starRating);
-            return "review/edit";
-        }
+        String validationState = getValidationState(title, content);
         
-        try {
-            // ReviewDto.RequestDto 객체 생성
-            ReviewDto.RequestDto requestDto = new ReviewDto.RequestDto(title, content, null, starRating, null);
-            
-            reviewService.update(id, requestDto, DEFAULT_AUTHOR_NAME);
-            return "redirect:/reviews/" + id;
-        } catch (IllegalArgumentException e) {
-            model.addAttribute("reviewId", id);
-            model.addAttribute("title", title);
-            model.addAttribute("content", content);
-            model.addAttribute("errorMessage", e.getMessage());
-            
-            // 별점 선택 상태 유지
-            addStarRatingAttributes(model, starRating);
-            return "review/edit";
-        } catch (Exception e) {
-            model.addAttribute("reviewId", id);
-            model.addAttribute("title", title);
-            model.addAttribute("content", content);
-            model.addAttribute("errorMessage", "후기 수정 중 오류가 발생했습니다: " + e.getMessage());
-            
-            // 별점 선택 상태 유지
-            addStarRatingAttributes(model, starRating);
-            return "review/edit";
+        switch (validationState) {
+            case "INVALID":
+                model.addAttribute("reviewId", id);
+                model.addAttribute("title", title);
+                model.addAttribute("content", content);
+                model.addAttribute("errorMessage", "제목과 내용은 필수 입력 항목입니다.");
+                
+                // 별점 선택 상태 유지
+                addStarRatingAttributes(model, starRating);
+                return "review/edit";
+            case "VALID":
+                // ReviewDto.RequestDto 객체 생성
+                ReviewDto.RequestDto requestDto = new ReviewDto.RequestDto(title, content, null, starRating, null);
+                
+                reviewService.update(id, requestDto, DEFAULT_AUTHOR_NAME);
+                return "redirect:/reviews/" + id;
+            default:
+                return "redirect:/reviews/" + id;
         }
     }
 
@@ -248,6 +225,13 @@ public class ReviewController {
         model.addAttribute("isStar3", starRating == 3);
         model.addAttribute("isStar4", starRating == 4);
         model.addAttribute("isStar5", starRating == 5);
+    }
+
+    // 유효성 검증 결과를 문자열로 반환하는 메서드
+    private String getValidationState(String title, String content) {
+        boolean isInputValid = title != null && !title.trim().isEmpty() 
+                            && content != null && !content.trim().isEmpty();
+        return isInputValid ? "VALID" : "INVALID";
     }
 
     // 페이지 번호 DTO

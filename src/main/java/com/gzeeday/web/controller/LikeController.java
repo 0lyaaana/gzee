@@ -23,12 +23,8 @@ public class LikeController {
     @PostMapping("/{reviewId}")
     @ResponseBody
     public ResponseEntity<?> toggleLike(@PathVariable Long reviewId) {
-        try {
-            // 모든 사용자가 좋아요 가능하도록 수정
-            LikeDto.ResponseDto responseDto = likeService.toggleLike(reviewId, DEFAULT_LIKER_NAME);
-            return ResponseEntity.ok(responseDto);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(e.getMessage());
-        }
+        // 모든 사용자가 좋아요 가능하도록 수정
+        LikeDto.ResponseDto responseDto = likeService.toggleLike(reviewId, DEFAULT_LIKER_NAME);
+        return ResponseEntity.ok(responseDto);
     }
 } 

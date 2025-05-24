@@ -40,24 +40,22 @@ public class RecommendationController {
                        @RequestParam("description") String description,
                        Model model, RedirectAttributes redirectAttributes) {
         // 입력값 검증
-        if (title == null || title.trim().isEmpty() || description == null || description.trim().isEmpty()) {
-            model.addAttribute("title", title);
-            model.addAttribute("description", description);
-            model.addAttribute("errorMessage", "제목과 설명은 필수 입력 항목입니다.");
-            return "recommendations/new";
-        }
+        String validationState = getValidationState(title, description);
         
-        try {
-            RecommendationDto.RequestDto requestDto = new RecommendationDto.RequestDto(title, description);
-            recommendationService.save(requestDto, DEFAULT_AUTHOR);
-            
-            redirectAttributes.addFlashAttribute("successMessage", "새 활동이 성공적으로 추천되었습니다.");
-            return "redirect:/recommendations";
-        } catch (Exception e) {
-            model.addAttribute("title", title);
-            model.addAttribute("description", description);
-            model.addAttribute("errorMessage", "추천 등록 중 오류가 발생했습니다: " + e.getMessage());
-            return "recommendations/new";
+        switch (validationState) {
+            case "INVALID":
+                model.addAttribute("title", title);
+                model.addAttribute("description", description);
+                model.addAttribute("errorMessage", "제목과 설명은 필수 입력 항목입니다.");
+                return "recommendations/new";
+            case "VALID":
+                RecommendationDto.RequestDto requestDto = new RecommendationDto.RequestDto(title, description);
+                recommendationService.save(requestDto, DEFAULT_AUTHOR);
+                
+                redirectAttributes.addFlashAttribute("successMessage", "새 활동이 성공적으로 추천되었습니다.");
+                return "redirect:/recommendations";
+            default:
+                return "redirect:/recommendations";
         }
     }
 
@@ -72,17 +70,13 @@ public class RecommendationController {
 
     @GetMapping("/edit/{id}")
     public String editForm(@PathVariable Long id, Model model) {
-        try {
-            RecommendationDto.ResponseDto recommendation = recommendationService.findById(id);
+        RecommendationDto.ResponseDto recommendation = recommendationService.findById(id);
 
-            model.addAttribute("recommendationId", id);
-            model.addAttribute("title", recommendation.getTitle());
-            model.addAttribute("description", recommendation.getDescription());
-            
-            return "recommendations/edit";
-        } catch (IllegalArgumentException e) {
-            return "redirect:/recommendations?error=" + e.getMessage();
-        }
+        model.addAttribute("recommendationId", id);
+        model.addAttribute("title", recommendation.getTitle());
+        model.addAttribute("description", recommendation.getDescription());
+        
+        return "recommendations/edit";
     }
 
     @PostMapping("/edit/{id}")
@@ -91,38 +85,37 @@ public class RecommendationController {
                        @RequestParam("description") String description,
                        Model model) {
         // 입력값 검증
-        if (title == null || title.trim().isEmpty() || description == null || description.trim().isEmpty()) {
-            model.addAttribute("recommendationId", id);
-            model.addAttribute("title", title);
-            model.addAttribute("description", description);
-            model.addAttribute("errorMessage", "제목과 설명은 필수 입력 항목입니다.");
-            return "recommendations/edit";
-        }
+        String validationState = getValidationState(title, description);
         
-        try {
-            // RecommendationDto.RequestDto 객체 생성
-            RecommendationDto.RequestDto requestDto = new RecommendationDto.RequestDto(title, description);
-            
-            recommendationService.update(id, requestDto);
-            return "redirect:/recommendations/" + id;
-        } catch (IllegalArgumentException e) {
-            model.addAttribute("recommendationId", id);
-            model.addAttribute("title", title);
-            model.addAttribute("description", description);
-            model.addAttribute("errorMessage", e.getMessage());
-            return "recommendations/edit";
+        switch (validationState) {
+            case "INVALID":
+                model.addAttribute("recommendationId", id);
+                model.addAttribute("title", title);
+                model.addAttribute("description", description);
+                model.addAttribute("errorMessage", "제목과 설명은 필수 입력 항목입니다.");
+                return "recommendations/edit";
+            case "VALID":
+                // RecommendationDto.RequestDto 객체 생성
+                RecommendationDto.RequestDto requestDto = new RecommendationDto.RequestDto(title, description);
+                
+                recommendationService.update(id, requestDto);
+                return "redirect:/recommendations/" + id;
+            default:
+                return "redirect:/recommendations/" + id;
         }
     }
 
     @PostMapping("/delete/{id}")
     public String delete(@PathVariable Long id, RedirectAttributes redirectAttributes) {
-        try {
-            recommendationService.delete(id);
-            redirectAttributes.addFlashAttribute("successMessage", "활동 추천이 성공적으로 삭제되었습니다.");
-            return "redirect:/recommendations";
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("errorMessage", "삭제 중 오류가 발생했습니다: " + e.getMessage());
-            return "redirect:/recommendations";
-        }
+        recommendationService.delete(id);
+        redirectAttributes.addFlashAttribute("successMessage", "활동 추천이 성공적으로 삭제되었습니다.");
+        return "redirect:/recommendations";
+    }
+    
+    // 유효성 검증 결과를 문자열로 반환하는 메서드
+    private String getValidationState(String title, String description) {
+        boolean isInputValid = title != null && !title.trim().isEmpty() 
+                            && description != null && !description.trim().isEmpty();
+        return isInputValid ? "VALID" : "INVALID";
     }
 } 
